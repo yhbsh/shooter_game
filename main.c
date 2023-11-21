@@ -14,12 +14,12 @@
 static int keyboard[MAX_KEYBOARD_KEYS] = {0};
 
 typedef struct {
-  SDL_Rect pos;
+  SDL_Rect rect;
   bool fire;
 } Player;
 
 typedef struct {
-  SDL_Rect pos;
+  SDL_Rect rect;
   int dx, dy;
   bool alive;
 } Bullet;
@@ -44,11 +44,11 @@ int main(void) {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
 
-    SDL_QueryTexture(player_texture, NULL, NULL, &player.pos.w, &player.pos.h);
-    SDL_QueryTexture(bullet_texture, NULL, NULL, &bullet.pos.w, &bullet.pos.h);
-    SDL_RenderCopy(renderer, player_texture, NULL, &player.pos);
+    SDL_QueryTexture(player_texture, NULL, NULL, &player.rect.w, &player.rect.h);
+    SDL_QueryTexture(bullet_texture, NULL, NULL, &bullet.rect.w, &bullet.rect.h);
+    SDL_RenderCopy(renderer, player_texture, NULL, &player.rect);
     if (bullet.alive)
-      SDL_RenderCopy(renderer, bullet_texture, NULL, &bullet.pos);
+      SDL_RenderCopy(renderer, bullet_texture, NULL, &bullet.rect);
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -66,42 +66,42 @@ int main(void) {
         player.fire = true;
     }
 
-    if (keyboard[SDL_SCANCODE_UP] && player.pos.y >= 0) {
-      player.pos.y -= VEL;
-      if (player.pos.y < 0)
-        player.pos.y = 0;
+    if (keyboard[SDL_SCANCODE_UP] && player.rect.y >= 0) {
+      player.rect.y -= VEL;
+      if (player.rect.y < 0)
+        player.rect.y = 0;
     }
 
-    if (keyboard[SDL_SCANCODE_DOWN] && player.pos.y + player.pos.h <= HEIGHT) {
-      player.pos.y += VEL;
-      if (player.pos.y + player.pos.h >= HEIGHT)
-        player.pos.y -= player.pos.y + player.pos.h - HEIGHT;
+    if (keyboard[SDL_SCANCODE_DOWN] && player.rect.y + player.rect.h <= HEIGHT) {
+      player.rect.y += VEL;
+      if (player.rect.y + player.rect.h >= HEIGHT)
+        player.rect.y -= player.rect.y + player.rect.h - HEIGHT;
     }
 
-    if (keyboard[SDL_SCANCODE_LEFT] && player.pos.x >= 0) {
-      player.pos.x -= VEL;
-      if (player.pos.x < 0)
-        player.pos.x = 0;
+    if (keyboard[SDL_SCANCODE_LEFT] && player.rect.x >= 0) {
+      player.rect.x -= VEL;
+      if (player.rect.x < 0)
+        player.rect.x = 0;
     }
 
-    if (keyboard[SDL_SCANCODE_RIGHT] && player.pos.x + player.pos.w <= WIDTH) {
-      player.pos.x += VEL;
-      if (player.pos.x + player.pos.w >= WIDTH)
-        player.pos.x -= player.pos.x + player.pos.w - WIDTH;
+    if (keyboard[SDL_SCANCODE_RIGHT] && player.rect.x + player.rect.w <= WIDTH) {
+      player.rect.x += VEL;
+      if (player.rect.x + player.rect.w >= WIDTH)
+        player.rect.x -= player.rect.x + player.rect.w - WIDTH;
     }
 
     if (player.fire) {
-      bullet.pos.x = player.pos.x + player.pos.w / 2 + bullet.pos.w / 2;
-      bullet.pos.y = player.pos.y + player.pos.h / 2 - bullet.pos.h / 2;
+      bullet.rect.x = player.rect.x + player.rect.w / 2 + bullet.rect.w / 2;
+      bullet.rect.y = player.rect.y + player.rect.h / 2 - bullet.rect.h / 2;
       bullet.dx = 16;
       bullet.dy = 0;
       bullet.alive = true;
     }
 
-    bullet.pos.x += bullet.dx;
-    bullet.pos.y += bullet.dy;
+    bullet.rect.x += bullet.dx;
+    bullet.rect.y += bullet.dy;
 
-    if (bullet.pos.x > WIDTH)
+    if (bullet.rect.x > WIDTH)
       bullet.alive = false;
 
     SDL_RenderPresent(renderer);
