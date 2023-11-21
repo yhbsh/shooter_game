@@ -6,6 +6,12 @@
 
 #define HEIGHT 800
 #define WIDTH 800
+#define VEL 6
+
+typedef struct {
+  SDL_Rect pos;
+  bool up, down, left, right;
+} Player;
 
 int main(void) {
   const char *filename = "player.png";
@@ -17,21 +23,73 @@ int main(void) {
   SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", filename);
 
   bool quit = false;
+  Player player = {0};
 
   while (!quit) {
-    SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 24, 120, 210, 255);
-
-    SDL_Rect r = {0};
-    SDL_QueryTexture(texture, NULL, NULL, &r.w, &r.h);
-    SDL_RenderCopy(renderer, texture, NULL, &r);
-
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       quit = event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_q);
       if (quit)
         break;
+
+      if (event.type == SDL_KEYDOWN) {
+        if (event.key.repeat == 0) {
+          if (event.key.keysym.sym == SDLK_UP) {
+            player.up = true;
+          }
+
+          if (event.key.keysym.sym == SDLK_DOWN) {
+            player.down = true;
+          }
+
+          if (event.key.keysym.sym == SDLK_LEFT) {
+            player.left = true;
+          }
+
+          if (event.key.keysym.sym == SDLK_RIGHT) {
+            player.right = true;
+          }
+        }
+      }
+
+      if (event.type == SDL_KEYUP) {
+        if (event.key.repeat == 0) {
+          if (event.key.keysym.sym == SDLK_UP) {
+            player.up = false;
+          }
+
+          if (event.key.keysym.sym == SDLK_DOWN) {
+            player.down = false;
+          }
+
+          if (event.key.keysym.sym == SDLK_LEFT) {
+            player.left = false;
+          }
+
+          if (event.key.keysym.sym == SDLK_RIGHT) {
+            player.right = false;
+          }
+        }
+      }
     }
+
+    if (player.up)
+      player.pos.y -= VEL;
+
+    if (player.down)
+      player.pos.y += VEL;
+
+    if (player.left)
+      player.pos.x -= VEL;
+
+    if (player.right)
+      player.pos.x += VEL;
+
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, 24, 120, 210, 255);
+
+    SDL_QueryTexture(texture, NULL, NULL, &player.pos.w, &player.pos.h);
+    SDL_RenderCopy(renderer, texture, NULL, &player.pos);
 
     SDL_RenderPresent(renderer);
 
