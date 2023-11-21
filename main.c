@@ -13,6 +13,7 @@ static bool quit = false;
 
 typedef struct Entity Entity;
 struct Entity {
+  bool reload;
   int x, y, w, h, dx, dy;
   SDL_Texture *texture;
 
@@ -119,7 +120,9 @@ int main(void) {
         player.x -= player.x + player.w - WIDTH;
     }
 
-    if (keyboard[SDL_SCANCODE_SPACE]) {
+    if (keyboard[SDL_SCANCODE_SPACE] && player.reload == false) {
+      player.reload = true;
+
       Entity *bullet = malloc(sizeof(Entity));
       memset(bullet, 0, sizeof(Entity));
       bullet->x = player.x;
@@ -147,6 +150,7 @@ int main(void) {
       tmp->y += tmp->dy;
 
       if (tmp->x > WIDTH) {
+        player.reload = false;
         head = tmp->next;
         free(tmp);
       }
