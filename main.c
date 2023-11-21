@@ -47,6 +47,7 @@ int main(void) {
     if (bullet.alive)
       SDL_RenderCopy(renderer, bullet_texture, NULL, &bullet.rect);
 
+    // handle events
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       quit = event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_Q);
