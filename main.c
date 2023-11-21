@@ -52,7 +52,7 @@ int main(void) {
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-      quit = event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_q);
+      quit = event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_Q);
       if (quit)
         break;
 
