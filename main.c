@@ -1,10 +1,7 @@
-#include "SDL2/SDL_rect.h"
-#include "SDL2/SDL_scancode.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #define HEIGHT 800
 #define WIDTH 800
@@ -12,17 +9,14 @@
 #define MAX_KEYBOARD_KEYS 355
 
 static bool keyboard[MAX_KEYBOARD_KEYS] = {0};
+static bool quit = false;
 
 typedef struct {
   SDL_Rect rect;
-  bool fire;
-} Player;
-
-typedef struct {
-  SDL_Rect rect;
-  int dx, dy;
   bool alive;
-} Bullet;
+  int dx, dy;
+  SDL_Texture *texture;
+} Entity;
 
 int main(void) {
   const char *player_asset_filename = "player.png";
@@ -31,21 +25,23 @@ int main(void) {
   SDL_Init(SDL_INIT_VIDEO);
   SDL_Window *window = SDL_CreateWindow("Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, HEIGHT, WIDTH, SDL_WINDOW_OPENGL);
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
   SDL_Texture *player_texture = IMG_LoadTexture(renderer, player_asset_filename);
   SDL_Texture *bullet_texture = IMG_LoadTexture(renderer, bullet_asset_filename);
-
-  SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", player_asset_filename);
-
-  bool quit = false;
-  Player player = {0};
-  Bullet bullet = {0};
+  Entity player = {0};
+  Entity bullet = {0};
+  player.texture = player_texture;
+  bullet.texture = bullet_texture;
 
   while (!quit) {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
 
+    // get texture size
     SDL_QueryTexture(player_texture, NULL, NULL, &player.rect.w, &player.rect.h);
     SDL_QueryTexture(bullet_texture, NULL, NULL, &bullet.rect.w, &bullet.rect.h);
+
+    // render the player
     SDL_RenderCopy(renderer, player_texture, NULL, &player.rect);
     if (bullet.alive)
       SDL_RenderCopy(renderer, bullet_texture, NULL, &bullet.rect);
@@ -63,10 +59,10 @@ int main(void) {
         keyboard[event.key.keysym.scancode] = false;
 
       if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_SPACE)
-        player.fire = true;
+        keyboard[event.key.keysym.scancode] = true;
 
       if (event.type == SDL_KEYUP && event.key.keysym.scancode == SDL_SCANCODE_SPACE)
-        player.fire = false;
+        keyboard[event.key.keysym.scancode] = false;
     }
 
     if (keyboard[SDL_SCANCODE_UP] && player.rect.y >= 0) {
@@ -93,7 +89,7 @@ int main(void) {
         player.rect.x -= player.rect.x + player.rect.w - WIDTH;
     }
 
-    if (player.fire) {
+    if (keyboard[SDL_SCANCODE_SPACE]) {
       bullet.rect.x = player.rect.x + player.rect.w / 2 + bullet.rect.w / 2;
       bullet.rect.y = player.rect.y + player.rect.h / 2 - bullet.rect.h / 2;
       bullet.dx = 16;
