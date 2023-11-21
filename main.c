@@ -73,17 +73,29 @@ int main(void) {
       }
     }
 
-    if (player.up)
+    if (player.up && player.pos.y >= 0) {
       player.pos.y -= VEL;
+      if (player.pos.y < 0)
+        player.pos.y = 0;
+    }
 
-    if (player.down)
+    if (player.down && player.pos.y + player.pos.h <= HEIGHT) {
       player.pos.y += VEL;
+      if (player.pos.y + player.pos.h >= HEIGHT)
+        player.pos.y -= player.pos.y + player.pos.h - HEIGHT;
+    }
 
-    if (player.left)
+    if (player.left && player.pos.x >= 0) {
       player.pos.x -= VEL;
+      if (player.pos.x < 0)
+        player.pos.x = 0;
+    }
 
-    if (player.right)
+    if (player.right && player.pos.x + player.pos.w <= WIDTH) {
       player.pos.x += VEL;
+      if (player.pos.x + player.pos.w >= WIDTH)
+        player.pos.x -= player.pos.x + player.pos.w - WIDTH;
+    }
 
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 24, 120, 210, 255);
