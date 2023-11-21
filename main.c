@@ -62,11 +62,7 @@ int main(void) {
   long then = SDL_GetTicks();
   float remainder = 0;
 
-  bool pause = false;
-
   while (!quit) {
-    if (pause)
-      continue;
 
     // init render context
     SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
@@ -153,9 +149,6 @@ int main(void) {
           ;
         tmp->next = bullet;
       }
-
-      if (keyboard[SDL_SCANCODE_P])
-        pause = !pause;
     }
 
     for (Entity *tmp = head; tmp != NULL; tmp = tmp->next) {
