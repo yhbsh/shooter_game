@@ -19,8 +19,6 @@ struct Entity {
   Entity *next;
 };
 
-static Entity *head = NULL;
-
 static void cap_frame_rate(long *then, float *remainder) {
 
   long wait = 16 + *remainder;
@@ -57,6 +55,7 @@ int main(void) {
 
   long then = SDL_GetTicks();
   float remainder = 0;
+  Entity *head = NULL;
 
   while (!quit) {
 
