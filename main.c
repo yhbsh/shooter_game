@@ -1,4 +1,5 @@
 #include "SDL2/SDL_rect.h"
+#include "SDL2/SDL_scancode.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdbool.h>
@@ -8,10 +9,13 @@
 #define HEIGHT 800
 #define WIDTH 800
 #define VEL 6
+#define MAX_KEYBOARD_KEYS 355
+
+static int keyboard[MAX_KEYBOARD_KEYS] = {0};
 
 typedef struct {
   SDL_Rect pos;
-  bool up, down, left, right, fire;
+  bool fire;
 } Player;
 
 typedef struct {
@@ -52,74 +56,35 @@ int main(void) {
       if (quit)
         break;
 
-      if (event.type == SDL_KEYDOWN) {
-        if (event.key.repeat == 0) {
-          if (event.key.keysym.sym == SDLK_UP) {
-            player.up = true;
-          }
+      if (event.type == SDL_KEYDOWN && event.key.repeat == 0)
+        keyboard[event.key.keysym.scancode] = 1;
 
-          if (event.key.keysym.sym == SDLK_DOWN) {
-            player.down = true;
-          }
+      if (event.type == SDL_KEYUP && event.key.repeat == 0)
+        keyboard[event.key.keysym.scancode] = 0;
 
-          if (event.key.keysym.sym == SDLK_LEFT) {
-            player.left = true;
-          }
-
-          if (event.key.keysym.sym == SDLK_RIGHT) {
-            player.right = true;
-          }
-
-          if (event.key.keysym.sym == SDLK_SPACE) {
-            player.fire = true;
-          }
-        }
-      }
-
-      if (event.type == SDL_KEYUP) {
-        if (event.key.repeat == 0) {
-          if (event.key.keysym.sym == SDLK_UP) {
-            player.up = false;
-          }
-
-          if (event.key.keysym.sym == SDLK_DOWN) {
-            player.down = false;
-          }
-
-          if (event.key.keysym.sym == SDLK_LEFT) {
-            player.left = false;
-          }
-
-          if (event.key.keysym.sym == SDLK_RIGHT) {
-            player.right = false;
-          }
-
-          if (event.key.keysym.sym == SDLK_SPACE) {
-            player.fire = false;
-          }
-        }
-      }
+      if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_SPACE)
+        player.fire = true;
     }
 
-    if (player.up && player.pos.y >= 0) {
+    if (keyboard[SDL_SCANCODE_UP] && player.pos.y >= 0) {
       player.pos.y -= VEL;
       if (player.pos.y < 0)
         player.pos.y = 0;
     }
 
-    if (player.down && player.pos.y + player.pos.h <= HEIGHT) {
+    if (keyboard[SDL_SCANCODE_DOWN] && player.pos.y + player.pos.h <= HEIGHT) {
       player.pos.y += VEL;
       if (player.pos.y + player.pos.h >= HEIGHT)
         player.pos.y -= player.pos.y + player.pos.h - HEIGHT;
     }
 
-    if (player.left && player.pos.x >= 0) {
+    if (keyboard[SDL_SCANCODE_LEFT] && player.pos.x >= 0) {
       player.pos.x -= VEL;
       if (player.pos.x < 0)
         player.pos.x = 0;
     }
 
-    if (player.right && player.pos.x + player.pos.w <= WIDTH) {
+    if (keyboard[SDL_SCANCODE_RIGHT] && player.pos.x + player.pos.w <= WIDTH) {
       player.pos.x += VEL;
       if (player.pos.x + player.pos.w >= WIDTH)
         player.pos.x -= player.pos.x + player.pos.w - WIDTH;
