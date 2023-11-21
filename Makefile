@@ -4,7 +4,7 @@ run: main
 		bin/main
 
 main: main.c init
-		$(CC) -I$(INC_PATH) -o bin/main main.c -L$(LIB_PATH) -lsdl2 -lsdl2_image
+		$(CC) -I$(INC_PATH) -g3 -o bin/main main.c -L$(LIB_PATH) -lsdl2 -lsdl2_image
 
 init:
 		mkdir -p bin/
