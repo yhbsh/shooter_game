@@ -1,10 +1,7 @@
-#include "SDL2/SDL_render.h"
-#include "SDL2/SDL_timer.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <sys/_types/_null.h>
 
 #define HEIGHT 800
 #define WIDTH 800
@@ -16,7 +13,6 @@ static bool quit = false;
 
 typedef struct Entity Entity;
 struct Entity {
-  bool alive;
   int x, y, w, h, dx, dy;
   SDL_Texture *texture;
 
@@ -75,8 +71,6 @@ int main(void) {
 
     // render bullets
     for (Entity *tmp = head; tmp != NULL; tmp = tmp->next) {
-      if (!tmp->alive)
-        continue;
       SDL_QueryTexture(tmp->texture, NULL, NULL, &tmp->w, &tmp->h);
       SDL_Rect tmp_rect = {.x = tmp->x, .y = tmp->y, .w = tmp->w, .h = tmp->h};
       SDL_RenderCopy(renderer, tmp->texture, NULL, &tmp_rect);
@@ -133,7 +127,7 @@ int main(void) {
       bullet->y = player.y;
       bullet->dx = 16;
       bullet->dy = 0;
-      bullet->alive = true;
+      bullet->next = NULL;
 
       bullet->texture = bullet_texture;
       SDL_QueryTexture(bullet->texture, NULL, NULL, &bullet->w, &bullet->h);
@@ -144,10 +138,8 @@ int main(void) {
       if (head == NULL) {
         head = bullet;
       } else {
-        Entity *tmp;
-        for (tmp = head; tmp->next != NULL; tmp = tmp->next)
-          ;
-        tmp->next = bullet;
+        bullet->next = head;
+        head = bullet;
       }
     }
 
@@ -155,8 +147,10 @@ int main(void) {
       tmp->x += tmp->dx;
       tmp->y += tmp->dy;
 
-      if (tmp->x > WIDTH)
-        tmp->alive = false;
+      if (tmp->x > WIDTH) {
+        head = tmp->next;
+        free(tmp);
+      }
     }
 
     SDL_RenderPresent(renderer);
