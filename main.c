@@ -26,6 +26,12 @@ int main(void) {
   Player player = {0};
 
   while (!quit) {
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
+
+    SDL_QueryTexture(texture, NULL, NULL, &player.pos.w, &player.pos.h);
+    SDL_RenderCopy(renderer, texture, NULL, &player.pos);
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       quit = event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_q);
@@ -96,12 +102,6 @@ int main(void) {
       if (player.pos.x + player.pos.w >= WIDTH)
         player.pos.x -= player.pos.x + player.pos.w - WIDTH;
     }
-
-    SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 24, 120, 210, 255);
-
-    SDL_QueryTexture(texture, NULL, NULL, &player.pos.w, &player.pos.h);
-    SDL_RenderCopy(renderer, texture, NULL, &player.pos);
 
     SDL_RenderPresent(renderer);
 
