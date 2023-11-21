@@ -1,7 +1,10 @@
+#include "SDL2/SDL_render.h"
+#include "SDL2/SDL_timer.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/_types/_null.h>
 
 #define HEIGHT 800
 #define WIDTH 800
@@ -11,12 +14,36 @@
 static bool keyboard[MAX_KEYBOARD_KEYS] = {0};
 static bool quit = false;
 
-typedef struct {
-  SDL_Rect rect;
+typedef struct Entity Entity;
+struct Entity {
   bool alive;
-  int dx, dy;
+  int x, y, w, h, dx, dy;
   SDL_Texture *texture;
-} Entity;
+
+  Entity *next;
+};
+
+static Entity *head = NULL;
+
+static void cap_frame_rate(long *then, float *remainder) {
+
+  long wait = 16 + *remainder;
+
+  *remainder -= (int)*remainder;
+
+  long frameTime = SDL_GetTicks() - *then;
+
+  wait -= frameTime;
+
+  if (wait < 1)
+    wait = 1;
+
+  SDL_Delay(wait);
+
+  *remainder += 0.667;
+
+  *then = SDL_GetTicks();
+}
 
 int main(void) {
   const char *player_asset_filename = "player.png";
@@ -28,24 +55,36 @@ int main(void) {
 
   SDL_Texture *player_texture = IMG_LoadTexture(renderer, player_asset_filename);
   SDL_Texture *bullet_texture = IMG_LoadTexture(renderer, bullet_asset_filename);
+
   Entity player = {0};
-  Entity bullet = {0};
   player.texture = player_texture;
-  bullet.texture = bullet_texture;
+
+  long then = SDL_GetTicks();
+  float remainder = 0;
+
+  bool pause = false;
 
   while (!quit) {
+    if (pause)
+      continue;
+
     // init render context
     SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
     SDL_RenderClear(renderer);
 
-    // get texture size
-    SDL_QueryTexture(player.texture, NULL, NULL, &player.rect.w, &player.rect.h);
-    SDL_QueryTexture(bullet.texture, NULL, NULL, &bullet.rect.w, &bullet.rect.h);
+    // render player
+    SDL_QueryTexture(player.texture, NULL, NULL, &player.w, &player.h);
+    SDL_Rect player_rect = {.x = player.x, .y = player.y, .w = player.w, .h = player.h};
+    SDL_RenderCopy(renderer, player.texture, NULL, &player_rect);
 
-    // render the player
-    SDL_RenderCopy(renderer, player.texture, NULL, &player.rect);
-    if (bullet.alive)
-      SDL_RenderCopy(renderer, bullet.texture, NULL, &bullet.rect);
+    // render bullets
+    for (Entity *tmp = head; tmp != NULL; tmp = tmp->next) {
+      if (!tmp->alive)
+        continue;
+      SDL_QueryTexture(tmp->texture, NULL, NULL, &tmp->w, &tmp->h);
+      SDL_Rect tmp_rect = {.x = tmp->x, .y = tmp->y, .w = tmp->w, .h = tmp->h};
+      SDL_RenderCopy(renderer, tmp->texture, NULL, &tmp_rect);
+    }
 
     // handle events
     SDL_Event event;
@@ -67,47 +106,69 @@ int main(void) {
         keyboard[event.key.keysym.scancode] = false;
     }
 
-    if (keyboard[SDL_SCANCODE_UP] && player.rect.y >= 0) {
-      player.rect.y -= VEL;
-      if (player.rect.y < 0)
-        player.rect.y = 0;
+    if (keyboard[SDL_SCANCODE_UP] && player.y >= 0) {
+      player.y -= VEL;
+      if (player.y < 0)
+        player.y = 0;
     }
 
-    if (keyboard[SDL_SCANCODE_DOWN] && player.rect.y + player.rect.h <= HEIGHT) {
-      player.rect.y += VEL;
-      if (player.rect.y + player.rect.h >= HEIGHT)
-        player.rect.y -= player.rect.y + player.rect.h - HEIGHT;
+    if (keyboard[SDL_SCANCODE_DOWN] && player.y + player.h <= HEIGHT) {
+      player.y += VEL;
+      if (player.y + player.h >= HEIGHT)
+        player.y -= player.y + player.h - HEIGHT;
     }
 
-    if (keyboard[SDL_SCANCODE_LEFT] && player.rect.x >= 0) {
-      player.rect.x -= VEL;
-      if (player.rect.x < 0)
-        player.rect.x = 0;
+    if (keyboard[SDL_SCANCODE_LEFT] && player.x >= 0) {
+      player.x -= VEL;
+      if (player.x < 0)
+        player.x = 0;
     }
 
-    if (keyboard[SDL_SCANCODE_RIGHT] && player.rect.x + player.rect.w <= WIDTH) {
-      player.rect.x += VEL;
-      if (player.rect.x + player.rect.w >= WIDTH)
-        player.rect.x -= player.rect.x + player.rect.w - WIDTH;
+    if (keyboard[SDL_SCANCODE_RIGHT] && player.x + player.w <= WIDTH) {
+      player.x += VEL;
+      if (player.x + player.w >= WIDTH)
+        player.x -= player.x + player.w - WIDTH;
     }
 
     if (keyboard[SDL_SCANCODE_SPACE]) {
-      bullet.rect.x = player.rect.x + player.rect.w / 2 + bullet.rect.w / 2;
-      bullet.rect.y = player.rect.y + player.rect.h / 2 - bullet.rect.h / 2;
-      bullet.dx = 16;
-      bullet.dy = 0;
-      bullet.alive = true;
+      Entity *bullet = malloc(sizeof(Entity));
+      memset(bullet, 0, sizeof(Entity));
+      bullet->x = player.x;
+      bullet->y = player.y;
+      bullet->dx = 16;
+      bullet->dy = 0;
+      bullet->alive = true;
+
+      bullet->texture = bullet_texture;
+      SDL_QueryTexture(bullet->texture, NULL, NULL, &bullet->w, &bullet->h);
+
+      bullet->x += player.w / 2 + bullet->w / 2;
+      bullet->y += player.h / 2 - bullet->h / 2;
+
+      if (head == NULL) {
+        head = bullet;
+      } else {
+        Entity *tmp;
+        for (tmp = head; tmp->next != NULL; tmp = tmp->next)
+          ;
+        tmp->next = bullet;
+      }
+
+      if (keyboard[SDL_SCANCODE_P])
+        pause = !pause;
     }
 
-    bullet.rect.x += bullet.dx;
-    bullet.rect.y += bullet.dy;
+    for (Entity *tmp = head; tmp != NULL; tmp = tmp->next) {
+      tmp->x += tmp->dx;
+      tmp->y += tmp->dy;
 
-    if (bullet.rect.x > WIDTH)
-      bullet.alive = false;
+      if (tmp->x > WIDTH)
+        tmp->alive = false;
+    }
 
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(1000 / 60);
+    cap_frame_rate(&then, &remainder);
   }
 
   SDL_DestroyRenderer(renderer);
