@@ -34,8 +34,9 @@ int main(void) {
   bullet.texture = bullet_texture;
 
   while (!quit) {
-    SDL_RenderClear(renderer);
+    // init render context
     SDL_SetRenderDrawColor(renderer, 24, 24, 24, 255);
+    SDL_RenderClear(renderer);
 
     // get texture size
     SDL_QueryTexture(player_texture, NULL, NULL, &player.rect.w, &player.rect.h);
