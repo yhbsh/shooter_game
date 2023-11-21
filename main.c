@@ -11,7 +11,7 @@
 #define VEL 6
 #define MAX_KEYBOARD_KEYS 355
 
-static int keyboard[MAX_KEYBOARD_KEYS] = {0};
+static bool keyboard[MAX_KEYBOARD_KEYS] = {0};
 
 typedef struct {
   SDL_Rect rect;
@@ -57,13 +57,16 @@ int main(void) {
         break;
 
       if (event.type == SDL_KEYDOWN && event.key.repeat == 0)
-        keyboard[event.key.keysym.scancode] = 1;
+        keyboard[event.key.keysym.scancode] = true;
 
       if (event.type == SDL_KEYUP && event.key.repeat == 0)
-        keyboard[event.key.keysym.scancode] = 0;
+        keyboard[event.key.keysym.scancode] = false;
 
       if (event.type == SDL_KEYDOWN && event.key.keysym.scancode == SDL_SCANCODE_SPACE)
         player.fire = true;
+
+      if (event.type == SDL_KEYUP && event.key.keysym.scancode == SDL_SCANCODE_SPACE)
+        player.fire = false;
     }
 
     if (keyboard[SDL_SCANCODE_UP] && player.rect.y >= 0) {
