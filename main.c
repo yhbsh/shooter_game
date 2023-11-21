@@ -39,13 +39,13 @@ int main(void) {
     SDL_RenderClear(renderer);
 
     // get texture size
-    SDL_QueryTexture(player_texture, NULL, NULL, &player.rect.w, &player.rect.h);
-    SDL_QueryTexture(bullet_texture, NULL, NULL, &bullet.rect.w, &bullet.rect.h);
+    SDL_QueryTexture(player.texture, NULL, NULL, &player.rect.w, &player.rect.h);
+    SDL_QueryTexture(bullet.texture, NULL, NULL, &bullet.rect.w, &bullet.rect.h);
 
     // render the player
-    SDL_RenderCopy(renderer, player_texture, NULL, &player.rect);
+    SDL_RenderCopy(renderer, player.texture, NULL, &player.rect);
     if (bullet.alive)
-      SDL_RenderCopy(renderer, bullet_texture, NULL, &bullet.rect);
+      SDL_RenderCopy(renderer, bullet.texture, NULL, &bullet.rect);
 
     // handle events
     SDL_Event event;
