@@ -13,7 +13,6 @@ static bool quit = false;
 
 typedef struct Entity Entity;
 struct Entity {
-  bool reload;
   int x, y, w, h, dx, dy;
   SDL_Texture *texture;
 
@@ -56,7 +55,7 @@ int main(void) {
 
   long then = SDL_GetTicks();
   float remainder = 0;
-  Entity *head = NULL;
+  Entity *bullets_head = NULL;
 
   while (!quit) {
 
@@ -70,7 +69,7 @@ int main(void) {
     SDL_RenderCopy(renderer, player.texture, NULL, &player_rect);
 
     // render bullets
-    for (Entity *tmp = head; tmp != NULL; tmp = tmp->next) {
+    for (Entity *tmp = bullets_head; tmp != NULL; tmp = tmp->next) {
       SDL_QueryTexture(tmp->texture, NULL, NULL, &tmp->w, &tmp->h);
       SDL_Rect tmp_rect = {.x = tmp->x, .y = tmp->y, .w = tmp->w, .h = tmp->h};
       SDL_RenderCopy(renderer, tmp->texture, NULL, &tmp_rect);
@@ -120,38 +119,36 @@ int main(void) {
         player.x -= player.x + player.w - WIDTH;
     }
 
-    if (keyboard[SDL_SCANCODE_SPACE] && player.reload == false) {
-      player.reload = true;
-
+    if (keyboard[SDL_SCANCODE_SPACE]) {
       Entity *bullet = malloc(sizeof(Entity));
       memset(bullet, 0, sizeof(Entity));
-      bullet->x = player.x;
-      bullet->y = player.y;
-      bullet->dx = 16;
-      bullet->dy = 0;
-      bullet->next = NULL;
 
       bullet->texture = bullet_texture;
       SDL_QueryTexture(bullet->texture, NULL, NULL, &bullet->w, &bullet->h);
 
-      bullet->x += player.w / 2 + bullet->w / 2;
-      bullet->y += player.h / 2 - bullet->h / 2;
+      bullet->x = player.x + player.w / 2 + bullet->w / 2;
+      bullet->y = player.y + player.h / 2 - bullet->h / 2;
+      bullet->dx = 16;
+      bullet->dy = 0;
+      bullet->next = NULL;
 
-      if (head == NULL) {
-        head = bullet;
+
+
+      if (bullets_head == NULL) {
+        bullets_head = bullet;
       } else {
-        bullet->next = head;
-        head = bullet;
+        bullet->next = bullets_head;
+        bullets_head = bullet;
       }
     }
 
-    for (Entity *tmp = head; tmp != NULL; tmp = tmp->next) {
+		// move the bullet 
+    for (Entity *tmp = bullets_head; tmp != NULL; tmp = tmp->next) {
       tmp->x += tmp->dx;
       tmp->y += tmp->dy;
 
       if (tmp->x > WIDTH) {
-        player.reload = false;
-        head = tmp->next;
+        bullets_head = tmp->next;
         free(tmp);
       }
     }
