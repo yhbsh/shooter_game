@@ -57,6 +57,8 @@ int main(void) {
   float remainder = 0;
   Entity *bullets_head = NULL;
 
+  bool pause = false;
+
   while (!quit) {
 
     // init render context
@@ -95,61 +97,66 @@ int main(void) {
         keyboard[event.key.keysym.scancode] = false;
     }
 
-    if (keyboard[SDL_SCANCODE_UP] && player.y >= 0) {
-      player.y -= VEL;
-      if (player.y < 0)
-        player.y = 0;
+    if (keyboard[SDL_SCANCODE_P]) {
+      pause = !pause;
     }
 
-    if (keyboard[SDL_SCANCODE_DOWN] && player.y + player.h <= HEIGHT) {
-      player.y += VEL;
-      if (player.y + player.h >= HEIGHT)
-        player.y -= player.y + player.h - HEIGHT;
-    }
+    if (!pause) {
 
-    if (keyboard[SDL_SCANCODE_LEFT] && player.x >= 0) {
-      player.x -= VEL;
-      if (player.x < 0)
-        player.x = 0;
-    }
-
-    if (keyboard[SDL_SCANCODE_RIGHT] && player.x + player.w <= WIDTH) {
-      player.x += VEL;
-      if (player.x + player.w >= WIDTH)
-        player.x -= player.x + player.w - WIDTH;
-    }
-
-    if (keyboard[SDL_SCANCODE_SPACE]) {
-      Entity *bullet = malloc(sizeof(Entity));
-      memset(bullet, 0, sizeof(Entity));
-
-      bullet->texture = bullet_texture;
-      SDL_QueryTexture(bullet->texture, NULL, NULL, &bullet->w, &bullet->h);
-
-      bullet->x = player.x + player.w / 2 + bullet->w / 2;
-      bullet->y = player.y + player.h / 2 - bullet->h / 2;
-      bullet->dx = 16;
-      bullet->dy = 0;
-      bullet->next = NULL;
-
-
-
-      if (bullets_head == NULL) {
-        bullets_head = bullet;
-      } else {
-        bullet->next = bullets_head;
-        bullets_head = bullet;
+      if (keyboard[SDL_SCANCODE_UP] && player.y >= 0) {
+        player.y -= VEL;
+        if (player.y < 0)
+          player.y = 0;
       }
-    }
 
-		// move the bullet 
-    for (Entity *tmp = bullets_head; tmp != NULL; tmp = tmp->next) {
-      tmp->x += tmp->dx;
-      tmp->y += tmp->dy;
+      if (keyboard[SDL_SCANCODE_DOWN] && player.y + player.h <= HEIGHT) {
+        player.y += VEL;
+        if (player.y + player.h >= HEIGHT)
+          player.y -= player.y + player.h - HEIGHT;
+      }
 
-      if (tmp->x > WIDTH) {
-        bullets_head = tmp->next;
-        free(tmp);
+      if (keyboard[SDL_SCANCODE_LEFT] && player.x >= 0) {
+        player.x -= VEL;
+        if (player.x < 0)
+          player.x = 0;
+      }
+
+      if (keyboard[SDL_SCANCODE_RIGHT] && player.x + player.w <= WIDTH) {
+        player.x += VEL;
+        if (player.x + player.w >= WIDTH)
+          player.x -= player.x + player.w - WIDTH;
+      }
+
+      if (keyboard[SDL_SCANCODE_SPACE]) {
+        Entity *bullet = malloc(sizeof(Entity));
+        memset(bullet, 0, sizeof(Entity));
+
+        bullet->texture = bullet_texture;
+        SDL_QueryTexture(bullet->texture, NULL, NULL, &bullet->w, &bullet->h);
+
+        bullet->x = player.x + player.w / 2 + bullet->w / 2;
+        bullet->y = player.y + player.h / 2 - bullet->h / 2;
+        bullet->dx = 16;
+        bullet->dy = 0;
+        bullet->next = NULL;
+
+        if (bullets_head == NULL) {
+          bullets_head = bullet;
+        } else {
+          bullet->next = bullets_head;
+          bullets_head = bullet;
+        }
+      }
+
+      // move the bullet
+      for (Entity *tmp = bullets_head; tmp != NULL; tmp = tmp->next) {
+        tmp->x += tmp->dx;
+        tmp->y += tmp->dy;
+
+        if (tmp->x > WIDTH) {
+          bullets_head = tmp->next;
+          free(tmp);
+        }
       }
     }
 
