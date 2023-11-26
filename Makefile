@@ -1,10 +1,12 @@
 CC=clang
+CFLAGS=`pkg-config --cflags sdl2 sdl2_image`
+LIBS=`pkg-config --libs sdl2 sdl2_image`
 
 run: main
 		bin/main
 
 main: main.c init
-		$(CC) -I$(INC_PATH) -g3 -o bin/main main.c -L$(LIB_PATH) -lsdl2 -lsdl2_image
+		$(CC) $(CFLAGS) -O3 -o bin/main main.c $(LIBS)
 
 init:
 		mkdir -p bin/
